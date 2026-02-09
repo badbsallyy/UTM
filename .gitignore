@@ -70,4 +70,5 @@ iOSInjectionProject/
 build*/
 sysroot*/
 .DS_Store
+vmtool/pkg/web/static/novnc/
 CodeSigning.xcconfig
