@@ -1,0 +1,125 @@
+name: VMTool Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - 'copilot/**'
+    paths:
+      - 'vmtool/**'
+      - 'Makefile'
+      - '.github/workflows/vmtool.yml'
+  pull_request:
+    paths:
+      - 'vmtool/**'
+      - 'Makefile'
+      - '.github/workflows/vmtool.yml'
+  release:
+    types: [created]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build VMTool
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # Linux builds
+          - os: ubuntu-latest
+            goos: linux
+            goarch: amd64
+            binary_name: vmtool-linux-amd64
+          - os: ubuntu-latest
+            goos: linux
+            goarch: arm64
+            binary_name: vmtool-linux-arm64
+          # macOS builds
+          - os: macos-latest
+            goos: darwin
+            goarch: amd64
+            binary_name: vmtool-darwin-amd64
+          - os: macos-latest
+            goos: darwin
+            goarch: arm64
+            binary_name: vmtool-darwin-arm64
+          # Windows builds
+          - os: ubuntu-latest
+            goos: windows
+            goarch: amd64
+            binary_name: vmtool-windows-amd64.exe
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache-dependency-path: vmtool/go.sum
+
+      - name: Build VMTool
+        working-directory: vmtool
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          go build -v -ldflags="-s -w" -o ../build/${{ matrix.binary_name }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: build/${{ matrix.binary_name }}
+          retention-days: 7
+
+  test:
+    name: Test VMTool
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          cache-dependency-path: vmtool/go.sum
+
+      - name: Run tests
+        working-directory: vmtool
+        run: go test -v ./...
+
+  release:
+    name: Create Release Assets
+    needs: [build, test]
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+
+      - name: Create checksums
+        run: |
+          cd artifacts
+          for dir in */; do
+            cd "$dir"
+            for file in *; do
+              sha256sum "$file" > "$file.sha256"
+            done
+            cd ..
+          done
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

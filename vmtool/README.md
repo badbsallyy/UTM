@@ -23,13 +23,73 @@ VMTool is a terminal-based alternative to UTM that provisions virtual machines a
 
 - QEMU 7.0 or newer must be installed on your system.
 
-### Build from source
+### Quick Install (Recommended)
+
+Use the installation script to automatically download and install vmtool:
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/badbsallyy/UTM/main/vmtool/install.sh | sudo bash
+```
+
+Or if you have the repository cloned:
+
+```bash
+cd vmtool
+sudo ./install.sh
+```
+
+### Manual Installation
+
+#### Option 1: Install from Pre-built Binaries
+
+Download the latest release for your platform from the [releases page](https://github.com/badbsallyy/UTM/releases):
+
+```bash
+# For Linux (x86_64)
+curl -L -o vmtool https://github.com/badbsallyy/UTM/releases/latest/download/vmtool-linux-amd64
+chmod +x vmtool
+sudo mv vmtool /usr/local/bin/
+
+# For macOS (Apple Silicon)
+curl -L -o vmtool https://github.com/badbsallyy/UTM/releases/latest/download/vmtool-darwin-arm64
+chmod +x vmtool
+sudo mv vmtool /usr/local/bin/
+
+# For macOS (Intel)
+curl -L -o vmtool https://github.com/badbsallyy/UTM/releases/latest/download/vmtool-darwin-amd64
+chmod +x vmtool
+sudo mv vmtool /usr/local/bin/
+```
+
+#### Option 2: Build from Source
+
+Clone the repository and build:
+
+```bash
+git clone https://github.com/badbsallyy/UTM.git
+cd UTM/vmtool
 make build
 ```
 
 The binary will be located in `build/vmtool`.
+
+To install system-wide:
+
+```bash
+# Install to /usr/local/bin (requires sudo)
+sudo make install-system
+
+# Or install to your GOPATH/bin (no sudo required)
+make install
+```
+
+### Verify Installation
+
+After installation, verify that vmtool is accessible from your terminal:
+
+```bash
+vmtool --help
+```
 
 ## Usage
 
