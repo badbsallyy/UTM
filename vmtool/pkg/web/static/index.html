@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMTool Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto p-4">
+        <header class="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+            <h1 class="text-2xl font-bold text-blue-400">VMTool</h1>
+            <div id="vm-status" class="flex items-center space-x-2">
+                <span>Status:</span>
+                <span id="status-badge" class="px-2 py-1 rounded text-sm bg-gray-700">Unknown</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div class="lg:col-span-3 bg-black rounded-lg overflow-hidden border border-gray-700 shadow-2xl">
+                <iframe id="vnc-frame" src="" class="w-full h-[600px]" frameborder="0"></iframe>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <h2 class="text-lg font-semibold mb-4">Controls</h2>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="controlVM('start')" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition">Start</button>
+                        <button onclick="controlVM('stop')" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition">Stop</button>
+                        <button onclick="controlVM('pause')" class="bg-yellow-600 hover:bg-yellow-700 text-white py-2 px-4 rounded transition">Pause</button>
+                        <button onclick="controlVM('resume')" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition">Resume</button>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <h2 class="text-lg font-semibold mb-4">Snapshots</h2>
+                    <input id="snap-name" type="text" placeholder="Snapshot name" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 mb-2 text-sm">
+                    <button onclick="createSnapshot()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded transition">Take Snapshot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const vmName = new URLSearchParams(window.location.search).get('vm') || 'default';
+        document.getElementById('vnc-frame').src = `novnc/vnc.html?autoconnect=true&path=vms/${vmName}/vnc`;
+
+        async function controlVM(action) {
+            try {
+                const res = await fetch(`/vms/${vmName}/${action}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                updateStatus();
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function createSnapshot() {
+            const snapName = document.getElementById('snap-name').value;
+            if (!snapName) return alert('Enter a snapshot name');
+            try {
+                const res = await fetch(`/vms/${vmName}/snapshot/create?name=${snapName}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.error) alert(data.error);
+                else alert('Snapshot created');
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        async function updateStatus() {
+            try {
+                const res = await fetch(`/vms/${vmName}/status`);
+                const data = await res.json();
+                const badge = document.getElementById('status-badge');
+                badge.innerText = data.status.toUpperCase();
+                if (data.status === 'running') {
+                    badge.className = 'px-2 py-1 rounded text-sm bg-green-900 text-green-300';
+                } else {
+                    badge.className = 'px-2 py-1 rounded text-sm bg-red-900 text-red-300';
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        setInterval(updateStatus, 5000);
+        updateStatus();
+    </script>
+</body>
+</html>

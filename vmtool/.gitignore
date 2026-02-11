@@ -1,0 +1,10 @@
+# Go binaries
+vmtool
+vmtool.exe
+
+# noVNC assets (already embedded, no need to track individually if they cause issues)
+# pkg/web/static/novnc/
+
+# Common OS files
+.DS_Store
+Thumbs.db
