@@ -19,7 +19,11 @@ func (s *Server) handleVNCProxy(c *gin.Context) {
 	name := c.Param("name")
 	port := s.manager.GetVNCPort(name)
 	if port == 0 {
-		port = 5900 // Fallback
+		log.Printf("No VNC port configured for VM %s", name)
+		c.AbortWithStatusJSON(http.StatusBadGateway, gin.H{
+			"error": fmt.Sprintf("no VNC port configured for VM %s", name),
+		})
+		return
 	}
 	vncAddr := fmt.Sprintf("localhost:%d", port)
 
