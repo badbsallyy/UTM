@@ -49,7 +49,7 @@ export default class RawDecoder {
             index = 0;
         }
 
-        // Max sure the image is fully opaque
+        // Make sure the image is fully opaque
         for (let i = 0; i < pixels; i++) {
             data[index + i * 4 + 3] = 255;
         }
