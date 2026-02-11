@@ -11,12 +11,21 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
-
 func (s *Server) handleVNCProxy(c *gin.Context) {
 	name := c.Param("name")
+	
+	// Check authentication if token is configured
+	// Since WebSocket upgrades from browser can't send custom headers,
+	// we need to check the token from query string for this endpoint
+	if s.config.Security.APIToken != "" {
+		token := c.Query("token")
+		if token != s.config.Security.APIToken {
+			log.Printf("Unauthorized VNC connection attempt for VM %s", name)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+			return
+		}
+	}
+	
 	port := s.manager.GetVNCPort(name)
 	if port == 0 {
 		log.Printf("No VNC port configured for VM %s", name)
@@ -26,6 +35,21 @@ func (s *Server) handleVNCProxy(c *gin.Context) {
 		return
 	}
 	vncAddr := fmt.Sprintf("localhost:%d", port)
+
+	// Create upgrader with origin check specific to this server
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			origin := r.Header.Get("Origin")
+			// Allow same-origin requests and localhost origins
+			if origin == "" {
+				return true // Non-browser clients
+			}
+			// Check if origin matches the configured server address
+			expectedOrigin := fmt.Sprintf("http://%s:%d", s.config.Server.Host, s.config.Server.Port)
+			localhostOrigin := fmt.Sprintf("http://localhost:%d", s.config.Server.Port)
+			return origin == expectedOrigin || origin == localhostOrigin
+		},
+	}
 
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

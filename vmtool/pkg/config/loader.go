@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -28,7 +29,9 @@ func LoadAppConfig() (*AppConfig, error) {
 
 	// Try to load from file
 	if data, err := os.ReadFile(cfgPath); err == nil {
-		yaml.Unmarshal(data, cfg)
+		if err := yaml.Unmarshal(data, cfg); err != nil {
+			return nil, err
+		}
 	}
 
 	// ENV overrides
@@ -36,7 +39,11 @@ func LoadAppConfig() (*AppConfig, error) {
 		cfg.Server.Host = val
 	}
 	if val := os.Getenv("VMTOOL_PORT"); val != "" {
-		// handle port conversion if needed
+		var port int
+		if _, err := fmt.Sscanf(val, "%d", &port); err != nil {
+			return nil, fmt.Errorf("invalid VMTOOL_PORT: %v", err)
+		}
+		cfg.Server.Port = port
 	}
 
 	return cfg, nil

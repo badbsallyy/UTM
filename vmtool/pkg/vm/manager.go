@@ -28,15 +28,25 @@ func (m *Manager) StartVM(ctx context.Context, name string) error {
 		m.mu.Unlock()
 		return fmt.Errorf("VM %s is already running", name)
 	}
+	// Reserve the slot while holding the lock to prevent concurrent starts.
+	m.running[name] = nil
 	m.mu.Unlock()
 
 	cfg, ok := m.store.GetVM(name)
 	if !ok {
+		// Clean up reservation if the VM is not found.
+		m.mu.Lock()
+		delete(m.running, name)
+		m.mu.Unlock()
 		return fmt.Errorf("VM %s not found", name)
 	}
 
 	runner := qemu.NewRunner(cfg)
 	if err := runner.Start(ctx); err != nil {
+		// Clean up reservation on start failure.
+		m.mu.Lock()
+		delete(m.running, name)
+		m.mu.Unlock()
 		return err
 	}
 

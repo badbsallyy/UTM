@@ -48,7 +48,9 @@ func (s *Server) setupRoutes() {
 	protected.POST("/vms/:name/resume", s.handleResumeVM)
 	protected.GET("/vms/:name/status", s.handleStatusVM)
 	protected.POST("/vms/:name/snapshot/create", s.handleCreateSnapshot)
-	protected.GET("/vms/:name/vnc", s.handleVNCProxy)
+	
+	// VNC WebSocket endpoint handles auth internally (since WebSocket can't use headers)
+	s.router.GET("/vms/:name/vnc", s.handleVNCProxy)
 }
 
 func (s *Server) authMiddleware() gin.HandlerFunc {
@@ -59,11 +61,8 @@ func (s *Server) authMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Get token from header or query
+		// Get token from header only
 		token := c.GetHeader("X-VMTool-Token")
-		if token == "" {
-			token = c.Query("token")
-		}
 
 		if token != s.config.Security.APIToken {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
