@@ -1,6 +1,8 @@
 # Go binaries
 vmtool
 vmtool.exe
+vmtool-test
+build/
 
 # noVNC assets (already embedded, no need to track individually if they cause issues)
 # pkg/web/static/novnc/
