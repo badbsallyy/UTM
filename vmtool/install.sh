@@ -61,13 +61,14 @@ check_sudo() {
 
 # Install from local build
 install_local() {
-    local build_dir="../build"
+    local script_dir="$(cd "$(dirname "$0")" && pwd)"
+    local build_dir="${script_dir}/build"
     local binary_path="${build_dir}/vmtool"
     
     if [ ! -f "$binary_path" ]; then
         echo -e "${YELLOW}Binary not found at $binary_path${NC}"
         echo "Building vmtool..."
-        cd "$(dirname "$0")"
+        cd "$script_dir"
         make build
     fi
     
