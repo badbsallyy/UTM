@@ -44,10 +44,16 @@ func (s *Server) handleVNCProxy(c *gin.Context) {
 			if origin == "" {
 				return true // Non-browser clients
 			}
-			// Check if origin matches the configured server address
-			expectedOrigin := fmt.Sprintf("http://%s:%d", s.config.Server.Host, s.config.Server.Port)
-			localhostOrigin := fmt.Sprintf("http://localhost:%d", s.config.Server.Port)
-			return origin == expectedOrigin || origin == localhostOrigin
+			// Check if origin matches the configured server address (HTTP or HTTPS)
+			expectedOriginHTTP := fmt.Sprintf("http://%s:%d", s.config.Server.Host, s.config.Server.Port)
+			expectedOriginHTTPS := fmt.Sprintf("https://%s:%d", s.config.Server.Host, s.config.Server.Port)
+			localhostOriginHTTP := fmt.Sprintf("http://localhost:%d", s.config.Server.Port)
+			localhostOriginHTTPS := fmt.Sprintf("https://localhost:%d", s.config.Server.Port)
+			loopbackOriginHTTP := fmt.Sprintf("http://127.0.0.1:%d", s.config.Server.Port)
+			loopbackOriginHTTPS := fmt.Sprintf("https://127.0.0.1:%d", s.config.Server.Port)
+			return origin == expectedOriginHTTP || origin == expectedOriginHTTPS ||
+				origin == localhostOriginHTTP || origin == localhostOriginHTTPS ||
+				origin == loopbackOriginHTTP || origin == loopbackOriginHTTPS
 		},
 	}
 

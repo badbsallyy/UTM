@@ -48,11 +48,15 @@
         let apiToken = '';
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const queryParams = new URLSearchParams(window.location.search);
-        apiToken = hashParams.get('token') || queryParams.get('token') || localStorage.getItem('vmtool_token') || '';
+        const hashToken = hashParams.get('token');
+        const queryToken = queryParams.get('token');
         
-        // Store token in localStorage if provided
-        if (apiToken && !localStorage.getItem('vmtool_token')) {
+        // Prefer hash/query tokens over localStorage (allows token rotation)
+        if (hashToken || queryToken) {
+            apiToken = hashToken || queryToken;
             localStorage.setItem('vmtool_token', apiToken);
+        } else {
+            apiToken = localStorage.getItem('vmtool_token') || '';
         }
         
         // Build VNC URL with token if available
