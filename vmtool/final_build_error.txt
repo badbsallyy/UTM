@@ -1,5 +1,0 @@
-database/sql/driver
-github.com/utmapp/vmtool/pkg/vm
-# github.com/utmapp/vmtool/pkg/vm
-pkg/vm/manager.go:149:32: undefined: config
-github.com/google/uuid
