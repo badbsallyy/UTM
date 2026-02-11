@@ -24,6 +24,17 @@ UTM is a full featured system emulator and virtual machine host for iOS and macO
 * Frontend designed from scratch for macOS 11 and iOS 11+ using the latest and greatest APIs
 * Create, manage, run VMs directly from your device
 
+## VMTool - Terminal-Based VM Management
+
+VMTool is a terminal-based alternative to UTM that provisions virtual machines and streams them to a browser. It provides a CLI-first interface for managing VMs using the same powerful QEMU backend as the UTM desktop app.
+
+**Quick Install:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/badbsallyy/UTM/main/vmtool/install.sh | sudo bash
+```
+
+For more information, see the [VMTool README](vmtool/README.md).
+
 ## Additional macOS Features
 
 * Hardware accelerated virtualization using Hypervisor.framework and QEMU

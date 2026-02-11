@@ -1,5 +1,7 @@
 # VMTool - Terminal VM Streaming
 
+[![VMTool Build](https://github.com/badbsallyy/UTM/workflows/VMTool%20Build%20and%20Release/badge.svg)](https://github.com/badbsallyy/UTM/actions/workflows/vmtool.yml)
+
 VMTool is a terminal-based alternative to UTM that provisions virtual machines and streams them to a browser. It is built in Go and uses QEMU as the virtualization engine, providing the same powerful virtualization capabilities as the UTM desktop app in a CLI-first interface.
 
 ## Features
