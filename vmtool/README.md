@@ -98,13 +98,13 @@ VMTool can create and run VMs for any architecture supported by QEMU, including:
 
 ### Platform-Specific Acceleration
 
-| Host Platform | Accelerator | Use Case |
-|--------------|-------------|----------|
-| macOS (Intel) | HVF | Fast x86_64 guest VMs |
-| macOS (Apple Silicon) | HVF | Fast aarch64 guest VMs |
-| Linux (x86_64) | KVM | Fast x86_64 guest VMs |
-| Linux (ARM64) | KVM | Fast aarch64 guest VMs |
-| Windows | WHPX | Fast x86_64 guest VMs |
-| Any Platform | TCG | Software emulation for any guest architecture |
+| Host Platform        | Accelerator | Use Case                                  |
+|----------------------|-------------|-------------------------------------------|
+| macOS (Intel)        | HVF         | Fast x86_64 guest VMs                     |
+| macOS (Apple Silicon)| HVF         | Fast aarch64 guest VMs                    |
+| Linux (x86_64)       | KVM         | Fast x86_64 guest VMs                     |
+| Linux (ARM64)        | KVM         | Fast aarch64 guest VMs                    |
+| Windows              | WHPX        | Fast x86_64 guest VMs                     |
+| Any Platform         | TCG         | Software emulation for any guest architecture |
 
 This enables true universal VM creation: run x86_64 VMs on Apple Silicon, ARM VMs on Intel, or any architecture on any platform using the same QEMU backend as the UTM desktop application.
