@@ -43,11 +43,36 @@
 
     <script>
         const vmName = new URLSearchParams(window.location.search).get('vm') || 'default';
-        document.getElementById('vnc-frame').src = `novnc/vnc.html?autoconnect=true&path=vms/${vmName}/vnc`;
+        
+        // Get token from hash, query, or localStorage
+        let apiToken = '';
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        apiToken = hashParams.get('token') || queryParams.get('token') || localStorage.getItem('vmtool_token') || '';
+        
+        // Store token in localStorage if provided
+        if (apiToken && !localStorage.getItem('vmtool_token')) {
+            localStorage.setItem('vmtool_token', apiToken);
+        }
+        
+        // Build VNC URL with token if available
+        let vncUrl = `novnc/vnc.html?autoconnect=true&path=vms/${vmName}/vnc`;
+        if (apiToken) {
+            // Append token to the path parameter so it's included in the WebSocket URL
+            vncUrl = `novnc/vnc.html?autoconnect=true&path=vms/${vmName}/vnc?token=${encodeURIComponent(apiToken)}`;
+        }
+        document.getElementById('vnc-frame').src = vncUrl;
 
         async function controlVM(action) {
             try {
-                const res = await fetch(`/vms/${vmName}/${action}`, { method: 'POST' });
+                const headers = {};
+                if (apiToken) {
+                    headers['X-VMTool-Token'] = apiToken;
+                }
+                const res = await fetch(`/vms/${vmName}/${action}`, { 
+                    method: 'POST',
+                    headers: headers
+                });
                 const data = await res.json();
                 if (data.error) alert(data.error);
                 updateStatus();
@@ -60,7 +85,14 @@
             const snapName = document.getElementById('snap-name').value;
             if (!snapName) return alert('Enter a snapshot name');
             try {
-                const res = await fetch(`/vms/${vmName}/snapshot/create?name=${snapName}`, { method: 'POST' });
+                const headers = {};
+                if (apiToken) {
+                    headers['X-VMTool-Token'] = apiToken;
+                }
+                const res = await fetch(`/vms/${vmName}/snapshot/create?name=${snapName}`, { 
+                    method: 'POST',
+                    headers: headers
+                });
                 const data = await res.json();
                 if (data.error) alert(data.error);
                 else alert('Snapshot created');
@@ -71,7 +103,11 @@
 
         async function updateStatus() {
             try {
-                const res = await fetch(`/vms/${vmName}/status`);
+                const headers = {};
+                if (apiToken) {
+                    headers['X-VMTool-Token'] = apiToken;
+                }
+                const res = await fetch(`/vms/${vmName}/status`, { headers: headers });
                 const data = await res.json();
                 const badge = document.getElementById('status-badge');
                 badge.innerText = data.status.toUpperCase();

@@ -15,7 +15,7 @@ export function initLogging(level) {
         mainInitLogging(level);
     } else {
         const param = document.location.href.match(/logging=([A-Za-z0-9._-]*)/);
-        mainInitLogging(param || undefined);
+        mainInitLogging(param ? param[1] : undefined);
     }
 }
 
